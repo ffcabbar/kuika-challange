@@ -1,26 +1,44 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import React, { useState, useEffect } from "react";
+import Axios from "axios";
+import { BookCard, FilterDropdown } from "./components/index";
+import { Book } from "./interfaces/index";
 
-function App() {
+const App: React.FC = () => {
+  const [books, setBooks] = useState<Book[]>([]);
+  const [load, setLoad] = useState<number>(6);
+
+  const getBookService = () => {
+    Axios.get("http://fakerestapi.azurewebsites.net/api/Books")
+      .then((res) => {
+        // console.log(res, "heyyyy");
+        setBooks([...res.data]);
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+  };
+
+  useEffect(() => {
+    getBookService();
+  }, []);
+
+  useEffect(() => {
+    window.onscroll = () => {
+      if (
+        window.innerHeight + window.scrollY >=
+        document.body.scrollHeight - 6
+      ) {
+        setLoad(load + 6);
+      }
+    };
+  }, [load]);
+
   return (
     <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+      <FilterDropdown bookState={[books, setBooks]} />
+      <BookCard bookState={[books, setBooks, load]} />
     </div>
   );
-}
+};
 
 export default App;
